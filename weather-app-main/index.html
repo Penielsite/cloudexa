@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#030328" />
+    <meta
+      name="description"
+      content="Check current conditions and the forecast for any city around the world."
+    />
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon-32x32.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="./app.js" defer></script>
+    <title>Cloudexa</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Cloudexa home">
+        <img src="./assets/images/logo-mark.svg" alt="" />
+        <span class="brand-name">Cloudexa</span>
+      </a>
+      <div class="units-control">
+        <button
+          class="units-trigger"
+          id="units-trigger"
+          type="button"
+          aria-expanded="false"
+          aria-controls="units-menu"
+        >
+          <img src="./assets/images/icon-units.svg" alt="" />
+          <span>Units</span>
+          <img class="chevron" src="./assets/images/icon-dropdown.svg" alt="" />
+        </button>
+        <div class="units-menu" id="units-menu" hidden>
+          <button class="system-toggle" id="system-toggle" type="button">
+            Switch to Imperial
+          </button>
+          <fieldset>
+            <legend>Temperature</legend>
+            <button type="button" data-setting="temperature" data-value="celsius" aria-pressed="false">Celsius (°C)</button>
+            <button type="button" data-setting="temperature" data-value="fahrenheit" aria-pressed="false">Fahrenheit (°F)</button>
+          </fieldset>
+          <fieldset>
+            <legend>Wind Speed</legend>
+            <button type="button" data-setting="wind" data-value="kmh" aria-pressed="false">km/h</button>
+            <button type="button" data-setting="wind" data-value="mph" aria-pressed="false">mph</button>
+          </fieldset>
+          <fieldset>
+            <legend>Precipitation</legend>
+            <button type="button" data-setting="precipitation" data-value="mm" aria-pressed="false">Millimeters (mm)</button>
+            <button type="button" data-setting="precipitation" data-value="in" aria-pressed="false">Inches (in)</button>
+          </fieldset>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <h1>How’s the sky looking today?</h1>
+      <form class="search-form" id="search-form" role="search" autocomplete="off">
+        <div class="search-field">
+          <label class="sr-only" for="location-search">Search for a place</label>
+          <img src="./assets/images/icon-search.svg" alt="" />
+          <input
+            id="location-search"
+            name="location"
+            type="search"
+            placeholder="Search for a place..."
+            aria-describedby="search-message"
+            aria-controls="search-results"
+            aria-autocomplete="list"
+          />
+          <div class="search-results" id="search-results" role="listbox" hidden></div>
+        </div>
+        <button class="search-button" type="submit">Search</button>
+      </form>
+
+      <p class="search-message" id="search-message" role="status" aria-live="polite"></p>
+      <section class="map-section" aria-labelledby="map-title">
+        <div class="map-heading">
+          <div>
+            <h2 id="map-title">Explore the world</h2>
+            <p>Search for a city or country anywhere, or select a spot on the map.</p>
+          </div>
+          <span class="map-provider">OpenStreetMap</span>
+        </div>
+        <div
+          class="world-map"
+          id="world-map"
+          role="application"
+          aria-label="Interactive world map. Select a location to see its weather."
+        ></div>
+        <p class="map-message" id="map-message" role="status" aria-live="polite">
+          Select anywhere on the map to get the local weather.
+        </p>
+      </section>
+      <section class="loading-state" id="loading-state" aria-live="polite">
+        <img src="./assets/images/icon-loading.svg" alt="" />
+        <p>Loading the latest forecast...</p>
+      </section>
+
+      <section class="error-state" id="error-state" aria-live="polite" hidden>
+        <img src="./assets/images/icon-error.svg" alt="" />
+        <h2>Something went wrong</h2>
+        <p id="error-message">We couldn’t load the weather. Please try again.</p>
+        <button type="button" id="retry-button">
+          <img src="./assets/images/icon-retry.svg" alt="" />
+          Retry
+        </button>
+      </section>
+
+      <div class="weather-layout" id="weather-layout" hidden>
+        <div class="weather-main">
+          <section class="current-weather" aria-label="Current weather">
+            <div class="current-location">
+              <h2 id="location-name"></h2>
+              <p id="current-date"></p>
+            </div>
+            <div class="current-condition">
+              <img id="current-icon" src="./assets/images/icon-sunny.webp" alt="" />
+              <p id="current-temperature"></p>
+            </div>
+          </section>
+
+          <section class="metrics" aria-label="Current weather details">
+            <article class="metric-card">
+              <h3>Feels Like</h3>
+              <p id="feels-like"></p>
+            </article>
+            <article class="metric-card">
+              <h3>Humidity</h3>
+              <p id="humidity"></p>
+            </article>
+            <article class="metric-card">
+              <h3>Wind</h3>
+              <p id="wind-speed"></p>
+            </article>
+            <article class="metric-card">
+              <h3>Precipitation</h3>
+              <p id="precipitation"></p>
+            </article>
+          </section>
+
+          <section class="daily-section" aria-labelledby="daily-title">
+            <h2 id="daily-title">Daily forecast</h2>
+            <div class="daily-forecast" id="daily-forecast"></div>
+          </section>
+        </div>
+
+        <section class="hourly-section" aria-labelledby="hourly-title">
+          <div class="hourly-header">
+            <h2 id="hourly-title">Hourly forecast</h2>
+            <label class="sr-only" for="day-selector">Choose a day for the hourly forecast</label>
+            <select id="day-selector"></select>
+          </div>
+          <div class="hourly-forecast" id="hourly-forecast"></div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
